@@ -286,8 +286,40 @@ function getQuarter(date) {
  * { start: '01-01-2024', end: '15-01-2024' }, 1, 3 => ['01-01-2024', '05-01-2024', '09-01-2024', '13-01-2024']
  * { start: '01-01-2024', end: '10-01-2024' }, 1, 1 => ['01-01-2024', '03-01-2024', '05-01-2024', '07-01-2024', '09-01-2024']
  */
-function getWorkSchedule(/* period, countWorkDays, countOffDays */) {
-  throw new Error('Not implemented');
+function getWorkSchedule(period, countWorkDays, countOffDays) {
+  const arrOfWorkingDaysDates = [];
+  const [beginDay, beginMonth, beginYear] = period.start.split('-').map(Number);
+  const [finalDay, finalMonth, finalYear] = period.end.split('-').map(Number);
+  const beginDate = new Date(beginYear, beginMonth - 1, beginDay);
+  const finalDate = new Date(finalYear, finalMonth - 1, finalDay);
+  const actualDate = new Date(beginDate);
+  let isWeekDay = true;
+  let numberOfWeekdays = 0;
+  let numberOfWeekend = 0;
+
+  while (actualDate <= finalDate) {
+    if (isWeekDay) {
+      if (numberOfWeekdays < countWorkDays) {
+        const day = String(actualDate.getDate()).padStart(2, '0');
+        const month = String(actualDate.getMonth() + 1).padStart(2, '0');
+        const year = actualDate.getFullYear();
+        arrOfWorkingDaysDates.push(`${day}-${month}-${year}`);
+        numberOfWeekdays += 1;
+        if (numberOfWeekdays === countWorkDays) {
+          isWeekDay = false;
+          numberOfWeekend = 0;
+        }
+      }
+    } else {
+      numberOfWeekend += 1;
+      if (numberOfWeekend === countOffDays) {
+        isWeekDay = true;
+        numberOfWeekdays = 0;
+      }
+    }
+    actualDate.setDate(actualDate.getDate() + 1);
+  }
+  return arrOfWorkingDaysDates;
 }
 
 /**
@@ -302,8 +334,9 @@ function getWorkSchedule(/* period, countWorkDays, countOffDays */) {
  * Date(2022, 2, 1) => false
  * Date(2020, 2, 1) => true
  */
-function isLeapYear(/* date */) {
-  throw new Error('Not implemented');
+function isLeapYear(date) {
+  const year = date.getFullYear();
+  return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
 }
 
 module.exports = {
