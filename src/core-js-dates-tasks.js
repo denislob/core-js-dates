@@ -111,8 +111,10 @@ function getCountDaysInMonth(month, year) {
  * '2024-02-01T00:00:00.000Z', '2024-02-02T00:00:00.000Z'  => 2
  * '2024-02-01T00:00:00.000Z', '2024-02-12T00:00:00.000Z'  => 12
  */
-function getCountDaysOnPeriod(/* dateStart, dateEnd */) {
-  throw new Error('Not implemented');
+function getCountDaysOnPeriod(dateStart, dateEnd) {
+  const delta = new Date(dateEnd) - new Date(dateStart);
+  const result = Math.ceil(delta / (1000 * 3600 * 24)) + 1;
+  return result;
 }
 
 /**
@@ -132,8 +134,11 @@ function getCountDaysOnPeriod(/* dateStart, dateEnd */) {
  * '2024-02-02', { start: '2024-02-02', end: '2024-03-02' } => true
  * '2024-02-10', { start: '2024-02-02', end: '2024-03-02' } => true
  */
-function isDateInPeriod(/* date, period */) {
-  throw new Error('Not implemented');
+function isDateInPeriod(date, period) {
+  const searchDate = new Date(date);
+  const startPeriod = new Date(period.start);
+  const endPeriod = new Date(period.end);
+  return searchDate >= startPeriod && searchDate <= endPeriod;
 }
 
 /**
@@ -147,8 +152,20 @@ function isDateInPeriod(/* date, period */) {
  * '1999-01-05T02:20:00.000Z' => '1/5/1999, 2:20:00 AM'
  * '2010-12-15T22:59:00.000Z' => '12/15/2010, 10:59:00 PM'
  */
-function formatDate(/* date */) {
-  throw new Error('Not implemented');
+function formatDate(date) {
+  const d = new Date(date);
+  const month = d.getUTCMonth() + 1;
+  const day = d.getUTCDate();
+  const year = d.getUTCFullYear();
+  let hours = d.getUTCHours();
+  const minutes = d.getUTCMinutes();
+  const seconds = d.getUTCSeconds();
+  const noonOrMidnight = hours >= 12 ? 'PM' : 'AM';
+  hours %= 12;
+  hours = hours === 0 ? 12 : hours;
+  const processedMin = minutes.toString().padStart(2, '0');
+  const processedSec = seconds.toString().padStart(2, '0');
+  return `${month}/${day}/${year}, ${hours}:${processedMin}:${processedSec} ${noonOrMidnight}`;
 }
 
 /**
@@ -163,8 +180,18 @@ function formatDate(/* date */) {
  * 12, 2023 => 10
  * 1, 2024 => 8
  */
-function getCountWeekendsInMonth(/* month, year */) {
-  throw new Error('Not implemented');
+function getCountWeekendsInMonth(month, year) {
+  const d = new Date(year, month - 1, 1);
+  let count = 0;
+
+  while (d.getMonth() === month - 1) {
+    const day = d.getDay();
+    if (day === 0 || day === 6) count += 1;
+
+    d.setDate(d.getDate() + 1);
+  }
+
+  return count;
 }
 
 /**
@@ -180,8 +207,14 @@ function getCountWeekendsInMonth(/* month, year */) {
  * Date(2024, 0, 31) => 5
  * Date(2024, 1, 23) => 8
  */
-function getWeekNumberByDate(/* date */) {
-  throw new Error('Not implemented');
+function getWeekNumberByDate(date) {
+  const copy = new Date(date);
+  copy.setHours(0, 0, 0, 0);
+  copy.setDate(copy.getDate() + 3 - ((copy.getDay() + 6) % 7));
+  const firstDayOfYear = new Date(copy.getFullYear(), 0, 1);
+  const weekNumber = Math.ceil(((copy - firstDayOfYear) / 86400000 + 1) / 7);
+
+  return weekNumber;
 }
 
 /**
@@ -195,8 +228,19 @@ function getWeekNumberByDate(/* date */) {
  * Date(2024, 0, 13) => Date(2024, 8, 13)
  * Date(2023, 1, 1) => Date(2023, 9, 13)
  */
-function getNextFridayThe13th(/* date */) {
-  throw new Error('Not implemented');
+function getNextFridayThe13th(date) {
+  const nowDate = new Date(date);
+  nowDate.setDate(13);
+  if (nowDate <= date) {
+    nowDate.setMonth(nowDate.getMonth() + 1);
+    nowDate.setDate(13);
+  }
+  while (nowDate.getDay() !== 5) {
+    nowDate.setMonth(nowDate.getMonth() + 1);
+    nowDate.setDate(13);
+  }
+
+  return nowDate;
 }
 
 /**
@@ -210,8 +254,10 @@ function getNextFridayThe13th(/* date */) {
  * Date(2024, 5, 1) => 2
  * Date(2024, 10, 10) => 4
  */
-function getQuarter(/* date */) {
-  throw new Error('Not implemented');
+function getQuarter(date) {
+  const m = date.getMonth();
+  const quarter = Math.floor(m / 3) + 1;
+  return quarter;
 }
 
 /**
@@ -248,8 +294,9 @@ function getWorkSchedule(/* period, countWorkDays, countOffDays */) {
  * Date(2022, 2, 1) => false
  * Date(2020, 2, 1) => true
  */
-function isLeapYear(/* date */) {
-  throw new Error('Not implemented');
+function isLeapYear(date) {
+  const year = date.getFullYear();
+  return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
 }
 
 module.exports = {
